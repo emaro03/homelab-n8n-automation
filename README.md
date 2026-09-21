@@ -1,6 +1,6 @@
 # n8n — Workflow Automation
 
-> Part of [homelab-hub](https://github.com/YOUR_USERNAME/homelab-hub). Self-hosted n8n instance used to automate tasks across the lab and beyond.
+> Part of [homelab-hub](https://github.com/emaro03/homelab-hub). Self-hosted n8n instance used to automate tasks across the lab and beyond.
 
 ## Overview
 
