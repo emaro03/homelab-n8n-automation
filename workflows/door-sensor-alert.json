@@ -1,0 +1,61 @@
+{
+  "name": "Door Sensor Alert",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "REDACTED-webhook-path",
+        "responseMode": "onReceived"
+      },
+      "name": "Home Assistant Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "leftValue": "={{ $now.hour }}",
+              "rightValue": 7,
+              "operator": { "type": "number", "operation": "lt" }
+            },
+            {
+              "leftValue": "={{ $now.hour }}",
+              "rightValue": 22,
+              "operator": { "type": "number", "operation": "gt" }
+            }
+          ]
+        }
+      },
+      "name": "Outside Expected Hours?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "authentication": "webhook",
+        "webhookUrl": "https://REDACTED-notification-webhook.example.com",
+        "text": "=Door opened at {{ $now.format('HH:mm') }} — outside expected hours"
+      },
+      "name": "Send Alert",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [680, 220]
+    }
+  ],
+  "connections": {
+    "Home Assistant Webhook": {
+      "main": [[{ "node": "Outside Expected Hours?", "type": "main", "index": 0 }]]
+    },
+    "Outside Expected Hours?": {
+      "main": [[{ "node": "Send Alert", "type": "main", "index": 0 }], []]
+    }
+  }
+}

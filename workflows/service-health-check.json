@@ -1,0 +1,96 @@
+{
+  "name": "Service Health Check",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 15
+            }
+          ]
+        }
+      },
+      "name": "Every 15 Minutes",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://REDACTED-service-1.example.com/health",
+        "options": {
+          "timeout": 5000
+        }
+      },
+      "name": "Check Service 1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "continueOnFail": true,
+      "position": [460, 220]
+    },
+    {
+      "parameters": {
+        "url": "https://REDACTED-service-2.example.com/health",
+        "options": {
+          "timeout": 5000
+        }
+      },
+      "name": "Check Service 2",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "continueOnFail": true,
+      "position": [460, 380]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true
+          },
+          "combinator": "or",
+          "conditions": [
+            {
+              "leftValue": "={{ $json.error }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
+            }
+          ]
+        }
+      },
+      "name": "Any Failure?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "authentication": "webhook",
+        "webhookUrl": "https://REDACTED-notification-webhook.example.com",
+        "text": "=One or more services failed their health check at {{ $now.format('HH:mm') }}"
+      },
+      "name": "Send Alert",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [900, 300]
+    }
+  ],
+  "connections": {
+    "Every 15 Minutes": {
+      "main": [[{ "node": "Check Service 1", "type": "main", "index": 0 }, { "node": "Check Service 2", "type": "main", "index": 0 }]]
+    },
+    "Check Service 1": {
+      "main": [[{ "node": "Any Failure?", "type": "main", "index": 0 }]]
+    },
+    "Check Service 2": {
+      "main": [[{ "node": "Any Failure?", "type": "main", "index": 0 }]]
+    },
+    "Any Failure?": {
+      "main": [[{ "node": "Send Alert", "type": "main", "index": 0 }], []]
+    }
+  }
+}
